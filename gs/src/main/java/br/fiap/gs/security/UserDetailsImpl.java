@@ -15,7 +15,7 @@ public class UserDetailsImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if ("admin".equals(username)) {
 
-            return new User("admin", "admin123", Collections.emptyList());
+            return new User("admin", "{noop}admin123", Collections.emptyList());
         }
         throw new UsernameNotFoundException("Usuário não encontrado");
     }
