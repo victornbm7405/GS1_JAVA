@@ -3,10 +3,10 @@ package br.fiap.gs.controller;
 import br.fiap.gs.model.Alerta;
 import br.fiap.gs.service.AlertaService;
 import br.fiap.gs.security.JwtUtil;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/alertas")
@@ -25,18 +25,16 @@ public class AlertaController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Alerta>> listarTodos(Pageable pageable,
-                                                    @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<List<Alerta>> listarTodos(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
-
-        return ResponseEntity.ok(alertaService.listarTodosPaginado(pageable));
+        return ResponseEntity.ok(alertaService.listarTodos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Alerta> buscarPorId(@PathVariable Long id,
                                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
-
         return ResponseEntity.ok(alertaService.buscarPorId(id));
     }
 
@@ -44,7 +42,6 @@ public class AlertaController {
     public ResponseEntity<Alerta> gerarAlerta(@PathVariable Long idCidade,
                                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
-
         return ResponseEntity.ok(alertaService.gerarAlertaPorCidade(idCidade));
     }
 
@@ -53,7 +50,6 @@ public class AlertaController {
                                             @RequestParam("novaTemperatura") double novaTemperatura,
                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
-
         return ResponseEntity.ok(alertaService.atualizar(id, novaTemperatura));
     }
 
@@ -61,7 +57,6 @@ public class AlertaController {
     public ResponseEntity<Void> deletar(@PathVariable Long id,
                                         @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
-
         alertaService.deletar(id);
         return ResponseEntity.noContent().build();
     }
