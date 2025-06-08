@@ -4,7 +4,6 @@ import br.fiap.gs.exception.ResourceNotFoundException;
 import br.fiap.gs.model.Cidade;
 import br.fiap.gs.repository.CidadeRepository;
 import br.fiap.gs.dto.CidadeDTO;
-import br.fiap.gs.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,19 +19,7 @@ public class CidadeController {
     private CidadeRepository cidadeRepository;
 
     @GetMapping
-    public ResponseEntity<List<CidadeDTO>> listar(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        System.out.println("🔑 Token recebido: " + authHeader);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).build();
-        }
-
-        String token = authHeader.substring(7);
-        boolean valid = JwtService.validateTokenStatic(token);
-        System.out.println("✅ Token válido? " + valid);
-        if (!valid) {
-            return ResponseEntity.status(401).build();
-        }
-
+    public ResponseEntity<List<CidadeDTO>> listar() {
         List<CidadeDTO> lista = cidadeRepository
                 .findAll()
                 .stream()
@@ -42,20 +29,7 @@ public class CidadeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CidadeDTO> buscarPorId(@PathVariable Long id,
-                                                 @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        System.out.println("🔑 Token recebido: " + authHeader);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).build();
-        }
-
-        String token = authHeader.substring(7);
-        boolean valid = JwtService.validateTokenStatic(token);
-        System.out.println("✅ Token válido? " + valid);
-        if (!valid) {
-            return ResponseEntity.status(401).build();
-        }
-
+    public ResponseEntity<CidadeDTO> buscarPorId(@PathVariable Long id) {
         Cidade cidade = cidadeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com id: " + id));
         return ResponseEntity.ok(toDTO(cidade));
