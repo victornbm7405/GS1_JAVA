@@ -4,6 +4,7 @@ import br.fiap.gs.exception.ResourceNotFoundException;
 import br.fiap.gs.model.Cidade;
 import br.fiap.gs.repository.CidadeRepository;
 import br.fiap.gs.dto.CidadeDTO;
+import br.fiap.gs.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,17 @@ public class CidadeController {
     @Autowired
     private CidadeRepository cidadeRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private boolean isTokenInvalid(String authHeader) {
+        return authHeader == null || !authHeader.startsWith("Bearer ") || !jwtUtil.validateToken(authHeader.substring(7));
+    }
+
     @GetMapping
-    public ResponseEntity<List<CidadeDTO>> listar() {
+    public ResponseEntity<List<CidadeDTO>> listar(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
+
         List<CidadeDTO> lista = cidadeRepository
                 .findAll()
                 .stream()
@@ -29,21 +39,30 @@ public class CidadeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CidadeDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<CidadeDTO> buscarPorId(@PathVariable Long id,
+                                                 @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
+
         Cidade cidade = cidadeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com id: " + id));
         return ResponseEntity.ok(toDTO(cidade));
     }
 
     @PostMapping
-    public ResponseEntity<CidadeDTO> criar(@RequestBody CidadeDTO dto) {
+    public ResponseEntity<CidadeDTO> criar(@RequestBody CidadeDTO dto,
+                                           @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
+
         Cidade nova = toEntity(dto);
         Cidade salva = cidadeRepository.save(nova);
         return ResponseEntity.ok(toDTO(salva));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CidadeDTO> atualizar(@PathVariable Long id, @RequestBody CidadeDTO dto) {
+    public ResponseEntity<CidadeDTO> atualizar(@PathVariable Long id, @RequestBody CidadeDTO dto,
+                                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
+
         Cidade existente = cidadeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com id: " + id));
 
@@ -57,7 +76,10 @@ public class CidadeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id,
+                                        @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (isTokenInvalid(authHeader)) return ResponseEntity.status(401).build();
+
         if (!cidadeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Cidade não encontrada com id: " + id);
         }
